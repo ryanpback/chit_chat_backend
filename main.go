@@ -1,6 +1,7 @@
 package main
 
 import (
+	"chitChat/requesthandler"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -17,17 +18,8 @@ func enableCors(w *http.ResponseWriter) {
 }
 
 func setUpResponse(w *http.ResponseWriter, r *http.Request) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-}
-
-func extractRequestBody(r *http.Request) map[string]interface{} {
-	var body = make(map[string]interface{})
-
-	json.NewDecoder(r.Body).Decode(&body)
-
-	return body
 }
 
 func welcome(w http.ResponseWriter, r *http.Request) {
@@ -37,10 +29,13 @@ func welcome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request := extractRequestBody(r)
+	request, err := requesthandler.ExtractRequestBody(r)
 
-	log.Print(request["data"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
-	// data["hello"] = "Hola"
-	// json.NewEncoder(w).Encode(data)
+	data := request["data"]
+
+	json.NewEncoder(w).Encode(&data)
 }
