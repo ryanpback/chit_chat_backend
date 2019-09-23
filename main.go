@@ -2,7 +2,6 @@ package main
 
 import (
 	"chitChat/requesthandler"
-	"encoding/json"
 	"log"
 	"net/http"
 )
@@ -29,13 +28,8 @@ func welcome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request, err := requesthandler.ExtractRequestBody(r)
-
-	if err != nil {
+	var data map[string]interface{}
+	if err := requesthandler.Decode(r, &data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
-	data := request["data"]
-
-	json.NewEncoder(w).Encode(&data)
 }
