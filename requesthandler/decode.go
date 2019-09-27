@@ -10,6 +10,7 @@ func Decode(r *http.Request, value interface{}) error {
 	if err := json.NewDecoder(r.Body).Decode(value); err != nil {
 		return err
 	}
+
 	r.Body.Close()
 
 	return nil
