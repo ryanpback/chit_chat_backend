@@ -24,7 +24,7 @@ func GetAllUsers() ([]*User, error) {
 			users
 		`
 
-	rows, err := db.Query(qry)
+	rows, err := DBConn.Query(qry)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func GetUserByID(id int) (*User, error) {
 			id = $1
 	`
 
-	row := db.QueryRow(qry, id)
+	row := DBConn.QueryRow(qry, id)
 	err := row.Scan(&user.ID, &user.Name, &user.DisplayName, &user.password, &user.CreatedAt)
 
 	if err == sql.ErrNoRows {
