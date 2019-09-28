@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"os"
 
+	// Pull in the dirver so we can use the postgres init function
 	_ "github.com/lib/pq"
 
 	"github.com/joho/godotenv"
@@ -44,6 +45,7 @@ func InitConfig() (Config, error) {
 		c.DBDatabase = ""
 	}
 	if c.DBPassword == "" {
+		// default password in case no password for local db
 		c.DBPassword = os.Getenv("DB_PASSWORD_DEFAULT")
 	}
 	if c.DBPort == "" {
