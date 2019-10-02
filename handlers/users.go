@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"chitChat/models"
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -19,12 +18,12 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 	users, err := models.GetAllUsers()
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 
 		return
 	}
 
-	json.NewEncoder(w).Encode(&users)
+	respondWithJSON(w, http.StatusOK, users)
 }
 
 // UsersShow retrieves a single user based on ID
@@ -40,7 +39,7 @@ func UsersShow(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.Atoi(id)
 
 	if err != nil {
-		http.Error(w, "User ID must be a number", http.StatusInternalServerError)
+		respondWithError(w, http.StatusInternalServerError, "User ID must be a number")
 
 		return
 	}
@@ -48,12 +47,12 @@ func UsersShow(w http.ResponseWriter, r *http.Request) {
 	user, err := models.GetUserByID(userID)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		respondWithError(w, http.StatusNotFound, err.Error())
 
 		return
 	}
 
-	json.NewEncoder(w).Encode(&user)
+	respondWithJSON(w, http.StatusOK, user)
 }
 
 // UsersCreate creates a new user

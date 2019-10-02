@@ -1,4 +1,4 @@
-package requesthandler
+package handlers
 
 import (
 	"encoding/json"
