@@ -26,6 +26,11 @@ func openRoutes() []handlerInfo {
 			handler: handlers.UsersShow,
 			methods: []string{"GET", "OPTIONS"},
 		},
+		{
+			route:   "/users",
+			handler: handlers.UsersCreate,
+			methods: []string{"POST", "OPTIONS"},
+		},
 	}
 
 	return routes

@@ -8,11 +8,12 @@ import (
 
 // User describes the data attributes of a user
 type User struct {
-	ID          int64
-	Name        string
-	DisplayName string
-	password    string
-	CreatedAt   time.Time
+	ID        int64  `json:"id"`
+	Name      string `json:"name"`
+	UserName  string `json:"user_name"`
+	Email     string `json:"email"`
+	password  string
+	CreatedAt time.Time `json:"created_at"`
 }
 
 // GetAllUsers will retrieve all users in the DB
@@ -21,7 +22,7 @@ func GetAllUsers() ([]*User, error) {
 		SELECT
 			*
 		FROM
-			users
+			users;
 		`
 
 	rows, err := DBConn.Query(qry)
@@ -36,7 +37,7 @@ func GetAllUsers() ([]*User, error) {
 	for rows.Next() {
 		var user User
 
-		err := rows.Scan(&user.ID, &user.Name, &user.DisplayName, &user.password, &user.CreatedAt)
+		err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.UserName, &user.password, &user.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -60,11 +61,11 @@ func GetUserByID(id int) (*User, error) {
 		FROM
 			users
 		WHERE
-			id = $1
+			id = $1;
 	`
 
 	row := DBConn.QueryRow(qry, id)
-	err := row.Scan(&user.ID, &user.Name, &user.DisplayName, &user.password, &user.CreatedAt)
+	err := row.Scan(&user.ID, &user.Name, &user.UserName, &user.Email, &user.password, &user.CreatedAt)
 
 	if err == sql.ErrNoRows {
 		er := fmt.Errorf(fmt.Sprintf("No user found with ID: %d", id))
@@ -77,4 +78,35 @@ func GetUserByID(id int) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+// CreateUser will insert a new record into the DB
+func CreateUser(payload map[string]interface{}) (*User, error) {
+	var user *User = new(User)
+	const qry = `
+		INSERT INTO users(name, user_name, email, password)
+		VALUES
+			($1, $2, $3, $4)
+		RETURNING *;
+	`
+
+	err := DBConn.QueryRow(
+		qry,
+		payload["name"],
+		payload["userName"],
+		payload["email"],
+		payload["password"]).
+		Scan(
+			&user.ID,
+			&user.Name,
+			&user.Email,
+			&user.UserName,
+			&user.password,
+			&user.CreatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

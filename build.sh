@@ -13,10 +13,11 @@ echo "Building OSX binary..."
 CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o ../dist/chitchat-osx
 echo -e "done building! \n"
 
+# Run the build
 if [ "$RUN_BUILD" == "run" ]; then
-    # Run the build
     cd ../dist
     ./chitchat-osx
 fi
 
-# maybe in the future there will be other things that we need to build...
+# return to root dir
+cd ..

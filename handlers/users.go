@@ -16,7 +16,6 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	users, err := models.GetAllUsers()
-
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 
@@ -37,7 +36,6 @@ func UsersShow(w http.ResponseWriter, r *http.Request) {
 	id := params["id"]
 
 	userID, err := strconv.Atoi(id)
-
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "User ID must be a number")
 
@@ -45,7 +43,6 @@ func UsersShow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := models.GetUserByID(userID)
-
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, err.Error())
 
@@ -57,5 +54,22 @@ func UsersShow(w http.ResponseWriter, r *http.Request) {
 
 // UsersCreate creates a new user
 func UsersCreate(w http.ResponseWriter, r *http.Request) {
-	//
+	setHeaders(&w)
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	request, err := decode(r)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+	}
+
+	user, err := models.CreateUser(request)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, user)
 }
