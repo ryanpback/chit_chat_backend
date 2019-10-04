@@ -2,8 +2,6 @@
 
 RUN_BUILD=$1
 
-echo $1
-
 # let's build the web server!
 cd httpd
 
