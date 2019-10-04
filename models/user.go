@@ -82,7 +82,7 @@ func GetUserByID(id int) (*User, error) {
 
 // CreateUser will insert a new record into the DB
 func CreateUser(payload map[string]interface{}) (*User, error) {
-	var user *User = new(User)
+	var user User
 	const qry = `
 		INSERT INTO users(name, user_name, email, password)
 		VALUES
@@ -90,23 +90,24 @@ func CreateUser(payload map[string]interface{}) (*User, error) {
 		RETURNING *;
 	`
 
-	err := DBConn.QueryRow(
+	row := DBConn.QueryRow(
 		qry,
 		payload["name"],
 		payload["userName"],
 		payload["email"],
-		payload["password"]).
-		Scan(
-			&user.ID,
-			&user.Name,
-			&user.Email,
-			&user.UserName,
-			&user.password,
-			&user.CreatedAt)
+		payload["password"])
+
+	err := row.Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.UserName,
+		&user.password,
+		&user.CreatedAt)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return &user, nil
 }

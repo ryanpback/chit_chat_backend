@@ -15,6 +15,7 @@ echo -e "done building! \n"
 if [ "$RUN_BUILD" == "run" ]; then
     cd ../dist
     ./chitchat-osx
+    killall chitchat-osx
 fi
 
 # return to root dir
