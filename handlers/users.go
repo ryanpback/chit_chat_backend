@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"chitChat/models"
+	"chitChat/services"
 	"net/http"
 	"strconv"
 
@@ -62,6 +63,12 @@ func UsersCreate(w http.ResponseWriter, r *http.Request) {
 	request, err := decode(r)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
+	}
+
+	if valid, err := services.ValidateUser(request); !valid {
+		respondFailedValidation(w, err)
+
+		return
 	}
 
 	user, err := models.CreateUser(request)
