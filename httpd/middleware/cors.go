@@ -1,6 +1,19 @@
-package handlers
+package middleware
 
 import "net/http"
+
+// HandleCors is a middleware wrapper to set preflight headers
+func HandleCors(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodOptions {
+			setHeaders(&w)
+
+			return
+		}
+
+		h.ServeHTTP(w, r)
+	}
+}
 
 func setHeaders(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")

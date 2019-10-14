@@ -11,11 +11,6 @@ import (
 
 // UsersIndex returns all users
 func UsersIndex(w http.ResponseWriter, r *http.Request) {
-	setHeaders(&w)
-	if r.Method == http.MethodOptions {
-		return
-	}
-
 	users, err := models.GetAllUsers()
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
@@ -28,11 +23,6 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 
 // UsersShow retrieves a single user based on ID
 func UsersShow(w http.ResponseWriter, r *http.Request) {
-	setHeaders(&w)
-	if r.Method == http.MethodOptions {
-		return
-	}
-
 	params := mux.Vars(r)
 	id := params["id"]
 
@@ -55,11 +45,6 @@ func UsersShow(w http.ResponseWriter, r *http.Request) {
 
 // UsersCreate creates a new user
 func UsersCreate(w http.ResponseWriter, r *http.Request) {
-	setHeaders(&w)
-	if r.Method == http.MethodOptions {
-		return
-	}
-
 	request, err := decode(r)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())

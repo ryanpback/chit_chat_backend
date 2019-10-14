@@ -7,9 +7,9 @@ import (
 )
 
 type handlerInfo struct {
-	route   string
-	handler func(http.ResponseWriter, *http.Request)
-	methods []string
+	route       string
+	handlerFunc func(http.ResponseWriter, *http.Request)
+	methods     []string
 }
 
 func openRoutes() []handlerInfo {
@@ -17,19 +17,19 @@ func openRoutes() []handlerInfo {
 
 	routes = []handlerInfo{
 		{
-			route:   "/users",
-			handler: handlers.UsersIndex,
-			methods: []string{"GET", "OPTIONS"},
+			route:       "/users",
+			handlerFunc: handlers.UsersIndex,
+			methods:     []string{"GET", "OPTIONS"},
 		},
 		{
-			route:   "/users/{id}",
-			handler: handlers.UsersShow,
-			methods: []string{"GET", "OPTIONS"},
+			route:       "/users/{id}",
+			handlerFunc: handlers.UsersShow,
+			methods:     []string{"GET", "OPTIONS"},
 		},
 		{
-			route:   "/users",
-			handler: handlers.UsersCreate,
-			methods: []string{"POST", "OPTIONS"},
+			route:       "/users",
+			handlerFunc: handlers.UsersCreate,
+			methods:     []string{"POST", "OPTIONS"},
 		},
 	}
 
