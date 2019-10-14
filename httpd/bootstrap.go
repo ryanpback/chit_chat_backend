@@ -2,7 +2,7 @@ package main
 
 import (
 	bs "chitChat/bootstrap"
-	"chitChat/handlers"
+	"chitChat/httpd/handlers"
 
 	"chitChat/models"
 )

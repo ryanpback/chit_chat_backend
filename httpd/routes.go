@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"chitChat/handlers"
+	"chitChat/httpd/handlers"
 )
 
 type handlerInfo struct {
