@@ -42,37 +42,41 @@ func createUsers() {
 }
 
 func TestGetAllUsers(t *testing.T) {
+	assert := assert.New(t)
 	DBConn = tc.DBConn
 	createUsers()
 	defer th.TruncateUsers()
 
 	u, err := GetAllUsers()
 
-	assert.Nil(t, err)
-	assert.Equal(t, len(users), len(u), "Number of users should be equal to what was saved to the database")
+	assert.Nil(err)
+	assert.Equal(len(users), len(u), "Number of users should be equal to what was saved to the database")
 }
 
 func TestGetUserByIDUserNotExist(t *testing.T) {
+	assert := assert.New(t)
 	DBConn = tc.DBConn
 	createUsers()
 	defer th.TruncateUsers()
 
 	_, err := GetUserByID(999999)
 
-	assert.NotNil(t, err)
+	assert.NotNil(err)
 }
 
 func TestGetUserByIDUserExists(t *testing.T) {
+	assert := assert.New(t)
 	DBConn = tc.DBConn
 	createUsers()
 	defer th.TruncateUsers()
 
 	u, _ := GetUserByID(1)
 
-	assert.Equal(t, int64(1), (*u).ID)
+	assert.Equal(int64(1), (*u).ID)
 }
 
 func TestCreateUser(t *testing.T) {
+	assert := assert.New(t)
 	DBConn = tc.DBConn
 	userData := map[string]interface{}{
 		"name":     "Test",
@@ -84,5 +88,5 @@ func TestCreateUser(t *testing.T) {
 
 	u, _ := CreateUser(userData)
 
-	assert.Equal(t, userData["name"], u.Name)
+	assert.Equal(userData["name"], u.Name)
 }

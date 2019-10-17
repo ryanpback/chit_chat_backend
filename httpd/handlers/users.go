@@ -25,13 +25,7 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 func UsersShow(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
-
-	userID, err := strconv.Atoi(id)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "User ID must be a number")
-
-		return
-	}
+	userID, _ := strconv.Atoi(id)
 
 	user, err := models.GetUserByID(userID)
 	if err != nil {
@@ -64,4 +58,25 @@ func UsersCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusCreated, user)
+}
+
+// UsersEdit will edit a user (passed by ID)
+func UsersEdit(w http.ResponseWriter, r *http.Request) {
+	// request, err := decode(r)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusInternalServerError, err.Error())
+	// }
+	// fmt.Println(request)
+	// params := mux.Vars(r)
+	// id := params["id"]
+	// userID, _ := strconv.Atoi(id)
+
+	// user, err := models.GetUserByID(userID)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusNotFound, err.Error())
+
+	// 	return
+	// }
+
+	// respondWithJSON(w, http.StatusOK, user)
 }

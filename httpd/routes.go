@@ -22,7 +22,7 @@ func openRoutes() []handlerInfo {
 			methods:     []string{"GET", "OPTIONS"},
 		},
 		{
-			route:       "/users/{id}",
+			route:       "/users/{id: [0-9]+}",
 			handlerFunc: handlers.UsersShow,
 			methods:     []string{"GET", "OPTIONS"},
 		},
@@ -30,6 +30,11 @@ func openRoutes() []handlerInfo {
 			route:       "/users",
 			handlerFunc: handlers.UsersCreate,
 			methods:     []string{"POST", "OPTIONS"},
+		},
+		{
+			route:       "/users/{id: [0-9]+}",
+			handlerFunc: handlers.UsersEdit,
+			methods:     []string{"PATCH", "OPTIONS"},
 		},
 	}
 

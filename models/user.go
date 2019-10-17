@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // User describes the data attributes of a user
@@ -90,12 +92,18 @@ func CreateUser(payload map[string]interface{}) (*User, error) {
 		RETURNING *;
 	`
 
+	password := fmt.Sprintf("%v", payload["password"])
+	hash, er := hashAndSaltPassword([]byte(password))
+	if er != nil {
+		return nil, er
+	}
+
 	row := DBConn.QueryRow(
 		qry,
 		payload["name"],
 		payload["userName"],
 		payload["email"],
-		payload["password"])
+		hash)
 
 	err := row.Scan(
 		&user.ID,
@@ -110,4 +118,13 @@ func CreateUser(payload map[string]interface{}) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+func hashAndSaltPassword(b []byte) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword(b, 5)
+	if err != nil {
+		return "", err
+	}
+
+	return string(hash), nil
 }
