@@ -39,7 +39,7 @@ var users = []struct {
 func createUsers() {
 	for _, u := range users {
 		hash, _ := hashAndSaltPassword([]byte(u.password))
-		th.PersistUserToDB(u.name, u.userName, u.email, hash)
+		th.UserPersistToDB(u.name, u.userName, u.email, hash)
 	}
 }
 
