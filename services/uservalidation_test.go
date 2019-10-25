@@ -16,7 +16,7 @@ func TestValidateUserMissingFields(t *testing.T) {
 		"password":     "",
 	}
 
-	ok, err := ValidateUser(payload)
+	ok, err := ValidateUser(payload, GetUserCreateFields())
 
 	// I could assert an error message but that's
 	// prone to breaking if the message changes.
@@ -34,7 +34,7 @@ func TestValidateUserInvalidEmail(t *testing.T) {
 		"password":     "password",
 	}
 
-	failed, err := ValidateUser(payload)
+	failed, err := ValidateUser(payload, GetUserCreateFields())
 	assert.False(failed)
 
 	_, ok := err[0]["email"]
@@ -51,7 +51,7 @@ func TestValidateUserAllValidFields(t *testing.T) {
 		"password":     "password",
 	}
 
-	ok, err := ValidateUser(payload)
+	ok, err := ValidateUser(payload, GetUserCreateFields())
 
 	assert.True(ok)
 	assert.Nil(err)

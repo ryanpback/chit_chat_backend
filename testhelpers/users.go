@@ -2,8 +2,8 @@ package testhelpers
 
 import "log"
 
-// CreateUser and persist to DB
-func CreateUser(name string, userName string, email string, password string) {
+// PersistUserToDB and persist to DB
+func PersistUserToDB(name string, userName string, email string, password string) {
 	const qry = `
 		INSERT INTO users(name, user_name, email, password)
 		VALUES

@@ -2,6 +2,7 @@ package models
 
 import (
 	th "chitChat/testhelpers"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,45 +38,46 @@ var users = []struct {
 
 func createUsers() {
 	for _, u := range users {
-		th.CreateUser(u.name, u.userName, u.email, u.password)
+		hash, _ := hashAndSaltPassword([]byte(u.password))
+		th.PersistUserToDB(u.name, u.userName, u.email, hash)
 	}
 }
 
-func TestGetAllUsers(t *testing.T) {
+func TestUsersAll(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = tc.DBConn
 	createUsers()
 	defer th.TruncateUsers()
 
-	u, err := GetAllUsers()
+	u, err := UsersAll()
 
 	assert.Nil(err)
 	assert.Equal(len(users), len(u), "Number of users should be equal to what was saved to the database")
 }
 
-func TestGetUserByIDUserNotExist(t *testing.T) {
+func TestUserFindByIDUserNotExists(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = tc.DBConn
 	createUsers()
 	defer th.TruncateUsers()
 
-	_, err := GetUserByID(999999)
+	_, err := UserFindByID(999999)
 
 	assert.NotNil(err)
 }
 
-func TestGetUserByIDUserExists(t *testing.T) {
+func TestUserFindByIDUserExists(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = tc.DBConn
 	createUsers()
 	defer th.TruncateUsers()
 
-	u, _ := GetUserByID(1)
+	u, _ := UserFindByID(1)
 
 	assert.Equal(int64(1), (*u).ID)
 }
 
-func TestCreateUser(t *testing.T) {
+func TestUserCreate(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = tc.DBConn
 	userData := map[string]interface{}{
@@ -86,7 +88,95 @@ func TestCreateUser(t *testing.T) {
 	}
 	defer th.TruncateUsers()
 
-	u, _ := CreateUser(userData)
+	u, _ := UserCreate(userData)
 
 	assert.Equal(userData["name"], u.Name)
+}
+
+func TestUserEdit(t *testing.T) {
+	assert := assert.New(t)
+	DBConn = tc.DBConn
+	createUsers()
+	userData := map[string]interface{}{
+		"name":     "Updated Name",
+		"userName": "updateUserName",
+		"email":    "updated@email.com",
+		"password": "thispasswordshouldntupdatewhenediting",
+	}
+	defer th.TruncateUsers()
+
+	u, _ := UserFindByID(1)
+	updatedUser, _ := UserEdit(u, userData)
+
+	assert.Equal(userData["name"], (*updatedUser).Name)
+	assert.Equal(userData["userName"], (*updatedUser).UserName)
+	assert.Equal(userData["email"], (*updatedUser).Email)
+	assert.NotEqual(userData["password"], (*updatedUser).password)
+}
+
+func TestFindByEmailUserNotExists(t *testing.T) {
+	assert := assert.New(t)
+	DBConn = tc.DBConn
+	createUsers()
+	defer th.TruncateUsers()
+
+	_, err := UserFindByEmail("thisisanon@existentemail.com")
+
+	assert.NotNil(err)
+}
+
+func TestFindByEmailUserExists(t *testing.T) {
+	assert := assert.New(t)
+	DBConn = tc.DBConn
+	createUsers()
+	defer th.TruncateUsers()
+
+	u, _ := UserFindByEmail(users[0].email)
+
+	assert.Equal(users[0].email, (*u).Email)
+}
+
+func TestUserLoginUserNotExist(t *testing.T) {
+	assert := assert.New(t)
+	DBConn = tc.DBConn
+	createUsers()
+	loginData := map[string]interface{}{
+		"email":    "thisuser@doesnotexist.com",
+		"password": "password",
+	}
+	defer th.TruncateUsers()
+
+	_, err := UserLogin(loginData)
+
+	assert.NotNil(err)
+}
+
+func TestUserLoginPasswordNotMatch(t *testing.T) {
+	assert := assert.New(t)
+	DBConn = tc.DBConn
+	createUsers()
+	loginData := map[string]interface{}{
+		"email":    users[0].email,
+		"password": fmt.Sprintf("makethisfake%v", users[0].password),
+	}
+	defer th.TruncateUsers()
+
+	_, err := UserLogin(loginData)
+
+	assert.NotNil(err)
+}
+
+func TestUserLoginSuccessful(t *testing.T) {
+	assert := assert.New(t)
+	DBConn = tc.DBConn
+	createUsers()
+	loginData := map[string]interface{}{
+		"email":    users[0].email,
+		"password": "password",
+	}
+	defer th.TruncateUsers()
+
+	u, _ := UserLogin(loginData)
+
+	assert.Equal(int64(1), (*u).ID)
 }

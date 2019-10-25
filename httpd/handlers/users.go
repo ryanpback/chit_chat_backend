@@ -9,9 +9,32 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// UsersLogin handles user login
+func UsersLogin(w http.ResponseWriter, r *http.Request) {
+	request, err := decode(r)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+	}
+
+	if valid, err := services.ValidateUser(request, services.GetUserLoginFields()); !valid {
+		respondFailedValidation(w, err)
+
+		return
+	}
+
+	user, err := models.UserLogin(request)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, err.Error())
+
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, user)
+}
+
 // UsersIndex returns all users
 func UsersIndex(w http.ResponseWriter, r *http.Request) {
-	users, err := models.GetAllUsers()
+	users, err := models.UsersAll()
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 
@@ -27,7 +50,7 @@ func UsersShow(w http.ResponseWriter, r *http.Request) {
 	id := params["id"]
 	userID, _ := strconv.Atoi(id)
 
-	user, err := models.GetUserByID(userID)
+	user, err := models.UserFindByID(userID)
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, err.Error())
 
@@ -44,13 +67,13 @@ func UsersCreate(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 
-	if valid, err := services.ValidateUser(request); !valid {
+	if valid, err := services.ValidateUser(request, services.GetUserCreateFields()); !valid {
 		respondFailedValidation(w, err)
 
 		return
 	}
 
-	user, err := models.CreateUser(request)
+	user, err := models.UserCreate(request)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 
@@ -62,21 +85,32 @@ func UsersCreate(w http.ResponseWriter, r *http.Request) {
 
 // UsersEdit will edit a user (passed by ID)
 func UsersEdit(w http.ResponseWriter, r *http.Request) {
-	// request, err := decode(r)
-	// if err != nil {
-	// 	respondWithError(w, http.StatusInternalServerError, err.Error())
-	// }
-	// fmt.Println(request)
-	// params := mux.Vars(r)
-	// id := params["id"]
-	// userID, _ := strconv.Atoi(id)
+	request, err := decode(r)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+	}
 
-	// user, err := models.GetUserByID(userID)
-	// if err != nil {
-	// 	respondWithError(w, http.StatusNotFound, err.Error())
+	if valid, err := services.ValidateUser(request, services.GetUserEditFields()); !valid {
+		respondFailedValidation(w, err)
 
-	// 	return
-	// }
+		return
+	}
 
-	// respondWithJSON(w, http.StatusOK, user)
+	params := mux.Vars(r)
+	id := params["id"]
+	userID, _ := strconv.Atoi(id)
+
+	user, err := models.UserFindByID(userID)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, err.Error())
+
+		return
+	}
+
+	updatedUser, err := models.UserEdit(user, request)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+	}
+
+	respondWithJSON(w, http.StatusOK, updatedUser)
 }

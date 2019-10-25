@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -12,14 +13,35 @@ import (
 type User struct {
 	ID        int64  `json:"id"`
 	Name      string `json:"name"`
-	UserName  string `json:"user_name"`
 	Email     string `json:"email"`
+	UserName  string `json:"user_name"`
 	password  string
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// GetAllUsers will retrieve all users in the DB
-func GetAllUsers() ([]*User, error) {
+type payload map[string]interface{}
+
+// UserLogin will validate the user login and return the user. TODO: return a session, too.
+func UserLogin(p payload) (*User, error) {
+	failedLoginMessage := "The email or password you provided does not match any records"
+	email := fmt.Sprintf("%v", p["email"])
+	user, err := UserFindByEmail(email)
+	if err != nil {
+		return nil, errors.New(failedLoginMessage)
+	}
+
+	providedPassword := fmt.Sprintf("%v", p["password"])
+	userPassword := user.password
+
+	if match := comparePasswords(providedPassword, userPassword); !match {
+		return nil, errors.New(failedLoginMessage)
+	}
+
+	return user, nil
+}
+
+// UsersAll will retrieve all users in the DB
+func UsersAll() ([]*User, error) {
 	const qry = `
 		SELECT
 			*
@@ -54,8 +76,36 @@ func GetAllUsers() ([]*User, error) {
 	return users, nil
 }
 
-// GetUserByID will return a single user
-func GetUserByID(id int) (*User, error) {
+// UserFindByEmail will retreive a user by email
+func UserFindByEmail(email string) (*User, error) {
+	var user User
+	const qry = `
+		SELECT
+			*
+		FROM
+			users
+		WHERE
+			email = $1;
+	`
+
+	row := DBConn.QueryRow(qry, email)
+	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.UserName, &user.password, &user.CreatedAt)
+
+	if err == sql.ErrNoRows {
+		er := fmt.Errorf(fmt.Sprintf("No user found with email: %v", email))
+
+		return nil, er
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+// UserFindByID will return a single user
+func UserFindByID(id int) (*User, error) {
 	var user User
 	const qry = `
 		SELECT
@@ -67,7 +117,7 @@ func GetUserByID(id int) (*User, error) {
 	`
 
 	row := DBConn.QueryRow(qry, id)
-	err := row.Scan(&user.ID, &user.Name, &user.UserName, &user.Email, &user.password, &user.CreatedAt)
+	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.UserName, &user.password, &user.CreatedAt)
 
 	if err == sql.ErrNoRows {
 		er := fmt.Errorf(fmt.Sprintf("No user found with ID: %d", id))
@@ -82,8 +132,8 @@ func GetUserByID(id int) (*User, error) {
 	return &user, nil
 }
 
-// CreateUser will insert a new record into the DB
-func CreateUser(payload map[string]interface{}) (*User, error) {
+// UserCreate will insert a new record into the DB
+func UserCreate(p payload) (*User, error) {
 	var user User
 	const qry = `
 		INSERT INTO users(name, user_name, email, password)
@@ -92,7 +142,7 @@ func CreateUser(payload map[string]interface{}) (*User, error) {
 		RETURNING *;
 	`
 
-	password := fmt.Sprintf("%v", payload["password"])
+	password := fmt.Sprintf("%v", p["password"])
 	hash, er := hashAndSaltPassword([]byte(password))
 	if er != nil {
 		return nil, er
@@ -100,9 +150,9 @@ func CreateUser(payload map[string]interface{}) (*User, error) {
 
 	row := DBConn.QueryRow(
 		qry,
-		payload["name"],
-		payload["userName"],
-		payload["email"],
+		p["name"],
+		p["userName"],
+		p["email"],
 		hash)
 
 	err := row.Scan(
@@ -120,6 +170,39 @@ func CreateUser(payload map[string]interface{}) (*User, error) {
 	return &user, nil
 }
 
+// UserEdit will update the user
+func UserEdit(u *User, p payload) (*User, error) {
+	const qry = `
+		UPDATE users
+		SET name = $1,
+			user_name = $2,
+			email = $3
+		WHERE id = $4
+		RETURNING *;
+	`
+
+	row := DBConn.QueryRow(
+		qry,
+		p["name"],
+		p["userName"],
+		p["email"],
+		(*u).ID)
+
+	err := row.Scan(
+		&u.ID,
+		&u.Name,
+		&u.Email,
+		&u.UserName,
+		&u.password,
+		&u.CreatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return u, nil
+}
+
 func hashAndSaltPassword(b []byte) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword(b, 5)
 	if err != nil {
@@ -127,4 +210,16 @@ func hashAndSaltPassword(b []byte) (string, error) {
 	}
 
 	return string(hash), nil
+}
+
+func comparePasswords(plainText string, hashedPassword string) bool {
+	userPass := []byte(hashedPassword)
+	provided := []byte(plainText)
+
+	err := bcrypt.CompareHashAndPassword(userPass, provided)
+	if err != nil {
+		return false
+	}
+
+	return true
 }

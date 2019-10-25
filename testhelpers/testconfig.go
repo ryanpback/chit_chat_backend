@@ -55,6 +55,7 @@ func InitTestConfig() (TestConfig, error) {
 
 	c.DBConn = db
 	testConfig = c
+
 	return c, nil
 }
 

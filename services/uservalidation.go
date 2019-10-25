@@ -6,12 +6,32 @@ import (
 	"strings"
 )
 
-// ValidateUser validates the payload for the User model
-func ValidateUser(p map[string]interface{}) (bool, []map[string]string) {
-	var errors []map[string]string
-	requiredUserFields := []string{"name", "userName", "email", "emailConfirm", "password"}
+// GetUserLoginFields returns a slice of string containing the fields to be validated for user login
+func GetUserLoginFields() []string {
+	fields := []string{"email", "password"}
 
-	for _, keyString := range requiredUserFields {
+	return fields
+}
+
+// GetUserCreateFields returns a slice of string containing the fields to be validated for user creation
+func GetUserCreateFields() []string {
+	fields := []string{"name", "userName", "email", "emailConfirm", "password"}
+
+	return fields
+}
+
+// GetUserEditFields returns a slice of string containing the fields to be validated for user editing
+func GetUserEditFields() []string {
+	fields := []string{"name", "userName", "email"}
+
+	return fields
+}
+
+// ValidateUser validates the payload for the User model
+func ValidateUser(p map[string]interface{}, f []string) (bool, []map[string]string) {
+	var errors []map[string]string
+
+	for _, keyString := range f {
 		if p[keyString] == "" {
 			errors = append(errors, map[string]string{keyString: fmt.Sprintf("The '%s' field is required.", strings.ToTitle(keyString))})
 
