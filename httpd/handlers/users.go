@@ -9,29 +9,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// UsersLogin handles user login
-func UsersLogin(w http.ResponseWriter, r *http.Request) {
-	request, err := decode(r)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
-	}
-
-	if valid, err := services.ValidateUser(request, services.GetUserLoginFields()); !valid {
-		respondFailedValidation(w, err)
-
-		return
-	}
-
-	user, err := models.UserLogin(request)
-	if err != nil {
-		respondWithError(w, http.StatusNotFound, err.Error())
-
-		return
-	}
-
-	respondWithJSON(w, http.StatusOK, user)
-}
-
 // UsersIndex returns all users
 func UsersIndex(w http.ResponseWriter, r *http.Request) {
 	users, err := models.UsersAll()
