@@ -8,9 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var loginTC = th.BootstrapTestConfig()
+
 func TestLoginUserNotExist(t *testing.T) {
 	assert := assert.New(t)
-	DBConn = tc.DBConn
+	DBConn = loginTC.DBConn
 	createUsers()
 	loginData := map[string]interface{}{
 		"email":    "thisuser@doesnotexist.com",
@@ -25,7 +27,7 @@ func TestLoginUserNotExist(t *testing.T) {
 
 func TestLoginPasswordNotMatch(t *testing.T) {
 	assert := assert.New(t)
-	DBConn = tc.DBConn
+	DBConn = loginTC.DBConn
 	createUsers()
 	loginData := map[string]interface{}{
 		"email":    users[0].email,
@@ -40,7 +42,7 @@ func TestLoginPasswordNotMatch(t *testing.T) {
 
 func TestLoginSuccessful(t *testing.T) {
 	assert := assert.New(t)
-	DBConn = tc.DBConn
+	DBConn = loginTC.DBConn
 	createUsers()
 	loginData := map[string]interface{}{
 		"email":    users[0].email,

@@ -5,10 +5,9 @@ import (
 	"os"
 
 	// Pull in the driver so we can use the postgres init function
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
-
-	"github.com/joho/godotenv"
 )
 
 var testConfig TestConfig

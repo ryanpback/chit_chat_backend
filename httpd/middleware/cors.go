@@ -5,9 +5,9 @@ import "net/http"
 // HandleCors is a middleware wrapper to set preflight headers
 func HandleCors(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodOptions {
-			setHeaders(&w)
+		setHeaders(&w)
 
+		if r.Method == http.MethodOptions {
 			return
 		}
 

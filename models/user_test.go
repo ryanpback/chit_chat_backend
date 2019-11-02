@@ -7,6 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var userTC = th.BootstrapTestConfig()
+
 var users = []struct {
 	name     string
 	userName string
@@ -42,7 +44,7 @@ func createUsers() {
 
 func TestUsersAll(t *testing.T) {
 	assert := assert.New(t)
-	DBConn = tc.DBConn
+	DBConn = userTC.DBConn
 	createUsers()
 	defer th.TruncateUsers()
 
@@ -54,7 +56,7 @@ func TestUsersAll(t *testing.T) {
 
 func TestUserFindByIDUserNotExists(t *testing.T) {
 	assert := assert.New(t)
-	DBConn = tc.DBConn
+	DBConn = userTC.DBConn
 	createUsers()
 	defer th.TruncateUsers()
 
@@ -65,7 +67,7 @@ func TestUserFindByIDUserNotExists(t *testing.T) {
 
 func TestUserFindByIDUserExists(t *testing.T) {
 	assert := assert.New(t)
-	DBConn = tc.DBConn
+	DBConn = userTC.DBConn
 	createUsers()
 	defer th.TruncateUsers()
 
@@ -76,7 +78,7 @@ func TestUserFindByIDUserExists(t *testing.T) {
 
 func TestUserCreate(t *testing.T) {
 	assert := assert.New(t)
-	DBConn = tc.DBConn
+	DBConn = userTC.DBConn
 	userData := map[string]interface{}{
 		"name":     "Test",
 		"userName": "tee",
@@ -92,7 +94,7 @@ func TestUserCreate(t *testing.T) {
 
 func TestUserEdit(t *testing.T) {
 	assert := assert.New(t)
-	DBConn = tc.DBConn
+	DBConn = userTC.DBConn
 	createUsers()
 	userData := map[string]interface{}{
 		"name":     "Updated Name",
@@ -113,7 +115,7 @@ func TestUserEdit(t *testing.T) {
 
 func TestFindByEmailUserNotExists(t *testing.T) {
 	assert := assert.New(t)
-	DBConn = tc.DBConn
+	DBConn = userTC.DBConn
 	createUsers()
 	defer th.TruncateUsers()
 
@@ -124,7 +126,7 @@ func TestFindByEmailUserNotExists(t *testing.T) {
 
 func TestFindByEmailUserExists(t *testing.T) {
 	assert := assert.New(t)
-	DBConn = tc.DBConn
+	DBConn = userTC.DBConn
 	createUsers()
 	defer th.TruncateUsers()
 

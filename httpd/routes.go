@@ -18,7 +18,7 @@ func openRoutes() []handlerInfo {
 	routes = []handlerInfo{
 		{
 			route:       "/login",
-			handlerFunc: handlers.UsersLogin,
+			handlerFunc: handlers.Login,
 			methods:     []string{"POST", "OPTIONS"},
 		},
 		{
