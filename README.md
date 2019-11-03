@@ -21,3 +21,4 @@
 - Send images/videos/emojis
 - Web notifications
 - Registration email jobs
+- Two-factor auth
