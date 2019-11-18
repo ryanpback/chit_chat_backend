@@ -13,12 +13,13 @@ var loginTC = th.BootstrapTestConfig()
 func TestLoginUserNotExist(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = loginTC.DBConn
+	defer th.TruncateUsers()
+
 	createUsers()
 	loginData := map[string]interface{}{
 		"email":    "thisuser@doesnotexist.com",
 		"password": "password",
 	}
-	defer th.TruncateUsers()
 
 	_, err := UserLogin(loginData)
 
@@ -28,12 +29,13 @@ func TestLoginUserNotExist(t *testing.T) {
 func TestLoginPasswordNotMatch(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = loginTC.DBConn
+	defer th.TruncateUsers()
+
 	createUsers()
 	loginData := map[string]interface{}{
 		"email":    users[0].email,
 		"password": fmt.Sprintf("makethisfake%v", users[0].password),
 	}
-	defer th.TruncateUsers()
 
 	_, err := UserLogin(loginData)
 
@@ -43,12 +45,13 @@ func TestLoginPasswordNotMatch(t *testing.T) {
 func TestLoginSuccessful(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = loginTC.DBConn
+	defer th.TruncateUsers()
+
 	createUsers()
 	loginData := map[string]interface{}{
 		"email":    users[0].email,
 		"password": "password",
 	}
-	defer th.TruncateUsers()
 
 	u, _ := UserLogin(loginData)
 

@@ -45,8 +45,9 @@ func createUsers() {
 func TestUsersAll(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = userTC.DBConn
-	createUsers()
 	defer th.TruncateUsers()
+
+	createUsers()
 
 	u, err := UsersAll()
 
@@ -57,8 +58,9 @@ func TestUsersAll(t *testing.T) {
 func TestUserFindByIDUserNotExists(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = userTC.DBConn
-	createUsers()
 	defer th.TruncateUsers()
+
+	createUsers()
 
 	_, err := UserFindByID(999999)
 
@@ -68,8 +70,9 @@ func TestUserFindByIDUserNotExists(t *testing.T) {
 func TestUserFindByIDUserExists(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = userTC.DBConn
-	createUsers()
 	defer th.TruncateUsers()
+
+	createUsers()
 
 	u, _ := UserFindByID(1)
 
@@ -79,13 +82,14 @@ func TestUserFindByIDUserExists(t *testing.T) {
 func TestUserCreate(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = userTC.DBConn
+	defer th.TruncateUsers()
+
 	userData := map[string]interface{}{
 		"name":     "Test",
 		"userName": "tee",
 		"email":    "test@test.com",
 		"password": "password",
 	}
-	defer th.TruncateUsers()
 
 	u, _ := UserCreate(userData)
 
@@ -95,6 +99,8 @@ func TestUserCreate(t *testing.T) {
 func TestUserEdit(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = userTC.DBConn
+	defer th.TruncateUsers()
+
 	createUsers()
 	userData := map[string]interface{}{
 		"name":     "Updated Name",
@@ -102,7 +108,6 @@ func TestUserEdit(t *testing.T) {
 		"email":    "updated@email.com",
 		"password": "thispasswordshouldntupdatewhenediting",
 	}
-	defer th.TruncateUsers()
 
 	u, _ := UserFindByID(1)
 	updatedUser, _ := UserEdit(u, userData)
@@ -116,8 +121,9 @@ func TestUserEdit(t *testing.T) {
 func TestFindByEmailUserNotExists(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = userTC.DBConn
-	createUsers()
 	defer th.TruncateUsers()
+
+	createUsers()
 
 	_, err := UserFindByEmail("thisisanon@existentemail.com")
 
@@ -127,8 +133,9 @@ func TestFindByEmailUserNotExists(t *testing.T) {
 func TestFindByEmailUserExists(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = userTC.DBConn
-	createUsers()
 	defer th.TruncateUsers()
+
+	createUsers()
 
 	u, _ := UserFindByEmail(users[0].email)
 

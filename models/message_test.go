@@ -26,10 +26,11 @@ func createMessages(user1, user2, count int) {
 func TestMessageCreate(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = userTC.DBConn
-	createUsers()
-	users, _ := UsersAll()
 	defer th.TruncateUsers()
 	defer th.TruncateMessages()
+
+	createUsers()
+	users, _ := UsersAll()
 	messageData := map[string]interface{}{
 		"senderId":   users[0].ID,
 		"receiverId": users[1].ID,
