@@ -12,3 +12,5 @@ var DBConn *sql.DB
 
 // Log this is here so we can share the same logger with the main package
 var Log *logrus.Logger
+
+type payload map[string]interface{}

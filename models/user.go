@@ -14,12 +14,14 @@ type User struct {
 	ID        int64  `json:"id"`
 	Name      string `json:"name"`
 	Email     string `json:"email"`
-	UserName  string `json:"user_name"`
+	UserName  string `json:"userName"`
 	password  string
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
-type payload map[string]interface{}
+/*
+ * Exported Methods
+ */
 
 // UserLogin will validate the user login and return the user. TODO: return a session, too.
 func UserLogin(p payload) (*User, error) {
@@ -59,14 +61,14 @@ func UsersAll() ([]*User, error) {
 	users := make([]*User, 0)
 
 	for rows.Next() {
-		var user User
+		var u User
 
-		err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.UserName, &user.password, &user.CreatedAt)
+		err := rows.Scan(&u.ID, &u.Name, &u.Email, &u.UserName, &u.password, &u.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
 
-		users = append(users, &user)
+		users = append(users, &u)
 	}
 
 	if err = rows.Err(); err != nil {
@@ -136,7 +138,8 @@ func UserFindByID(id int) (*User, error) {
 func UserCreate(p payload) (*User, error) {
 	var user User
 	const qry = `
-		INSERT INTO users(name, user_name, email, password)
+		INSERT INTO
+			users(name, user_name, email, password)
 		VALUES
 			($1, $2, $3, $4)
 		RETURNING *;
@@ -173,11 +176,14 @@ func UserCreate(p payload) (*User, error) {
 // UserEdit will update the user
 func UserEdit(u *User, p payload) (*User, error) {
 	const qry = `
-		UPDATE users
-		SET name = $1,
+		UPDATE
+			users
+		SET
+			name = $1,
 			user_name = $2,
 			email = $3
-		WHERE id = $4
+		WHERE
+			id = $4
 		RETURNING *;
 	`
 
@@ -202,6 +208,10 @@ func UserEdit(u *User, p payload) (*User, error) {
 
 	return u, nil
 }
+
+/*
+ * Un-exported Methods
+ */
 
 func hashAndSaltPassword(b []byte) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword(b, 5)
