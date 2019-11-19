@@ -1,7 +1,5 @@
 package testhelpers
 
-import "log"
-
 // UserPersistToDB and persist to DB
 func UserPersistToDB(name string, userName string, email string, password string) {
 	const qry = `
@@ -14,8 +12,7 @@ func UserPersistToDB(name string, userName string, email string, password string
 
 	if err != nil {
 		TruncateUsers()
-		log.Print(err.Error())
-		panic("Something went wrong!")
+		panic(err.Error())
 	}
 }
 

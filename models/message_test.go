@@ -41,3 +41,27 @@ func TestMessageCreate(t *testing.T) {
 
 	assert.Nil(err)
 }
+
+func TestMessagesUser(t *testing.T) {
+	assert := assert.New(t)
+	DBConn = userTC.DBConn
+	// defer th.TruncateUsers()
+	// defer th.TruncateMessages()
+	createUsers()
+	users, _ := UsersAll()
+
+	createMessages(int(users[0].ID), int(users[1].ID), 2)
+	createMessages(int(users[0].ID), int(users[2].ID), 2)
+	createMessages(int(users[2].ID), int(users[1].ID), 2)
+	createMessages(int(users[0].ID), int(users[2].ID), 2)
+	createMessages(int(users[0].ID), int(users[1].ID), 2)
+	createMessages(int(users[1].ID), int(users[2].ID), 2)
+
+	userMessages, err := MessagesUser(int(users[0].ID))
+
+	assert.Nil(err)
+	fmt.Println(userMessages)
+
+	// TODO after this commit - test that user messages are properly
+	// grouped and grouped into multi-dimensional array
+}

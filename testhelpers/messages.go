@@ -1,7 +1,5 @@
 package testhelpers
 
-import "log"
-
 // MessagePersistToDB and persist to DB
 func MessagePersistToDB(sender, receiver int, message string) {
 	const qry = `
@@ -13,8 +11,7 @@ func MessagePersistToDB(sender, receiver int, message string) {
 
 	if err != nil {
 		TruncateMessages()
-		log.Print(err.Error())
-		panic("Something went wrong!")
+		panic(err.Error())
 	}
 }
 
