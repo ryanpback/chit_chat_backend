@@ -110,12 +110,14 @@ func TestUserEdit(t *testing.T) {
 	}
 
 	u, _ := UserFindByID(1)
+	userUpdatedAt := u.UpdatedAt
 	updatedUser, _ := UserEdit(u, userData)
 
 	assert.Equal(userData["name"], (*updatedUser).Name)
 	assert.Equal(userData["userName"], (*updatedUser).UserName)
 	assert.Equal(userData["email"], (*updatedUser).Email)
 	assert.NotEqual(userData["password"], (*updatedUser).password)
+	assert.NotEqual(userUpdatedAt, (*updatedUser).UpdatedAt)
 }
 
 func TestFindByEmailUserNotExists(t *testing.T) {

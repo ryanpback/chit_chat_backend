@@ -17,6 +17,7 @@ type User struct {
 	UserName  string `json:"userName"`
 	password  string
 	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 /*
@@ -63,7 +64,7 @@ func UsersAll() ([]*User, error) {
 	for rows.Next() {
 		var u User
 
-		err := rows.Scan(&u.ID, &u.Name, &u.Email, &u.UserName, &u.password, &u.CreatedAt)
+		err := rows.Scan(&u.ID, &u.Name, &u.Email, &u.UserName, &u.password, &u.CreatedAt, &u.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -80,7 +81,7 @@ func UsersAll() ([]*User, error) {
 
 // UserFindByEmail will retreive a user by email
 func UserFindByEmail(email string) (*User, error) {
-	var user User
+	var u User
 	const qry = `
 		SELECT
 			*
@@ -91,7 +92,14 @@ func UserFindByEmail(email string) (*User, error) {
 	`
 
 	row := DBConn.QueryRow(qry, email)
-	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.UserName, &user.password, &user.CreatedAt)
+	err := row.Scan(
+		&u.ID,
+		&u.Name,
+		&u.Email,
+		&u.UserName,
+		&u.password,
+		&u.CreatedAt,
+		&u.UpdatedAt)
 
 	if err == sql.ErrNoRows {
 		er := fmt.Errorf(fmt.Sprintf("No user found with email: %v", email))
@@ -103,12 +111,12 @@ func UserFindByEmail(email string) (*User, error) {
 		return nil, err
 	}
 
-	return &user, nil
+	return &u, nil
 }
 
 // UserFindByID will return a single user
 func UserFindByID(id int) (*User, error) {
-	var user User
+	var u User
 	const qry = `
 		SELECT
 			*
@@ -119,7 +127,14 @@ func UserFindByID(id int) (*User, error) {
 	`
 
 	row := DBConn.QueryRow(qry, id)
-	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.UserName, &user.password, &user.CreatedAt)
+	err := row.Scan(
+		&u.ID,
+		&u.Name,
+		&u.Email,
+		&u.UserName,
+		&u.password,
+		&u.CreatedAt,
+		&u.UpdatedAt)
 
 	if err == sql.ErrNoRows {
 		er := fmt.Errorf(fmt.Sprintf("No user found with ID: %d", id))
@@ -131,12 +146,12 @@ func UserFindByID(id int) (*User, error) {
 		return nil, err
 	}
 
-	return &user, nil
+	return &u, nil
 }
 
 // UserCreate will insert a new record into the DB
 func UserCreate(p payload) (*User, error) {
-	var user User
+	var u User
 	const qry = `
 		INSERT INTO
 			users(name, user_name, email, password)
@@ -159,18 +174,19 @@ func UserCreate(p payload) (*User, error) {
 		hash)
 
 	err := row.Scan(
-		&user.ID,
-		&user.Name,
-		&user.Email,
-		&user.UserName,
-		&user.password,
-		&user.CreatedAt)
+		&u.ID,
+		&u.Name,
+		&u.Email,
+		&u.UserName,
+		&u.password,
+		&u.CreatedAt,
+		&u.UpdatedAt)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return &u, nil
 }
 
 // UserEdit will update the user
@@ -181,7 +197,8 @@ func UserEdit(u *User, p payload) (*User, error) {
 		SET
 			name = $1,
 			user_name = $2,
-			email = $3
+			email = $3,
+			updated_at = NOW()
 		WHERE
 			id = $4
 		RETURNING *;
@@ -200,7 +217,8 @@ func UserEdit(u *User, p payload) (*User, error) {
 		&u.Email,
 		&u.UserName,
 		&u.password,
-		&u.CreatedAt)
+		&u.CreatedAt,
+		&u.UpdatedAt)
 
 	if err != nil {
 		return nil, err

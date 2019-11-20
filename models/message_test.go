@@ -45,8 +45,8 @@ func TestMessageCreate(t *testing.T) {
 func TestMessagesUser(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = userTC.DBConn
-	// defer th.TruncateUsers()
-	// defer th.TruncateMessages()
+	defer th.TruncateUsers()
+	defer th.TruncateMessages()
 	createUsers()
 	users, _ := UsersAll()
 

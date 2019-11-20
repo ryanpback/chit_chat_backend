@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS users (
     email           varchar(255)    NOT NULL    UNIQUE,
     user_name       varchar(50)     NOT NULL,
     password        varchar(255)    NOT NULL,
-    created_at      timestamp       with time zone DEFAULT current_timestamp
+    created_at      timestamp       DEFAULT     current_timestamp,
+    updated_at      timestamp       DEFAULT     current_timestamp
 );
 -- +goose StatementEnd
 
