@@ -1,8 +1,8 @@
 package handlers
 
 import (
+	"chitChat/helpers"
 	"chitChat/models"
-	"chitChat/services"
 	"net/http"
 	"strconv"
 
@@ -44,7 +44,7 @@ func UsersCreate(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 
-	if valid, err := services.ValidateUser(request, services.GetUserCreateFields()); !valid {
+	if valid, err := helpers.ValidateUser(request, helpers.GetUserCreateFields()); !valid {
 		respondFailedValidation(w, err)
 
 		return
@@ -67,7 +67,7 @@ func UsersEdit(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 
-	if valid, err := services.ValidateUser(request, services.GetUserEditFields()); !valid {
+	if valid, err := helpers.ValidateUser(request, helpers.GetUserEditFields()); !valid {
 		respondFailedValidation(w, err)
 
 		return

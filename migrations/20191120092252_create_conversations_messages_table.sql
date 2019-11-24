@@ -2,8 +2,8 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS conversations_messages (
     id                  bigserial       PRIMARY KEY,
-    conversation_id     bigserial
-    message_id          bigserial       NOT NULL,
+    conversation_id     bigserial       NOT NULL,
+    message_id          bigserial       NOT NULL
 );
 -- +goose StatementEnd
 

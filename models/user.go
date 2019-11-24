@@ -1,6 +1,7 @@
 package models
 
 import (
+	"chitChat/helpers"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -25,15 +26,15 @@ type User struct {
  */
 
 // UserLogin will validate the user login and return the user. TODO: return a session, too.
-func UserLogin(p payload) (*User, error) {
+func UserLogin(p Payload) (*User, error) {
 	failedLoginMessage := "The email or password you provided does not match any records"
-	email := fmt.Sprintf("%v", p["email"])
+	email := helpers.ConvertInterfaceToString(p["email"])
 	user, err := UserFindByEmail(email)
 	if err != nil {
 		return nil, errors.New(failedLoginMessage)
 	}
 
-	providedPassword := fmt.Sprintf("%v", p["password"])
+	providedPassword := helpers.ConvertInterfaceToString(p["password"])
 	userPassword := user.password
 
 	if match := comparePasswords(providedPassword, userPassword); !match {
@@ -150,7 +151,7 @@ func UserFindByID(id int) (*User, error) {
 }
 
 // UserCreate will insert a new record into the DB
-func UserCreate(p payload) (*User, error) {
+func UserCreate(p Payload) (*User, error) {
 	var u User
 	const qry = `
 		INSERT INTO
@@ -160,7 +161,7 @@ func UserCreate(p payload) (*User, error) {
 		RETURNING *;
 	`
 
-	password := fmt.Sprintf("%v", p["password"])
+	password := helpers.ConvertInterfaceToString(p["password"])
 	hash, er := hashAndSaltPassword([]byte(password))
 	if er != nil {
 		return nil, er
@@ -190,7 +191,7 @@ func UserCreate(p payload) (*User, error) {
 }
 
 // UserEdit will update the user
-func UserEdit(u *User, p payload) (*User, error) {
+func UserEdit(u *User, p Payload) (*User, error) {
 	const qry = `
 		UPDATE
 			users

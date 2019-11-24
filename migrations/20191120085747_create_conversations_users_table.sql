@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS conversations_users (
     id                  bigserial       PRIMARY KEY,
     user_id             bigserial       NOT NULL,
-    conversation_id     text            NOT NULL,
+    conversation_id     bigserial       NOT NULL
 );
 -- +goose StatementEnd
 

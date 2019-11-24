@@ -1,6 +1,7 @@
 package models
 
 import (
+	"chitChat/services"
 	th "chitChat/testhelpers"
 	"fmt"
 	"testing"
@@ -19,49 +20,28 @@ func createMessages(user1, user2, count int) {
 
 		message := fmt.Sprintf("User %d, sent user %d a message with an index value of %d", senderID, receiverID, i)
 
-		th.MessagePersistToDB(senderID, receiverID, message)
+		th.MessagePersistToDB(senderID, message)
 	}
 }
 
 func TestMessageCreate(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = userTC.DBConn
+	services.DBConn = userTC.DBConn
 	defer th.TruncateUsers()
 	defer th.TruncateMessages()
 
 	createUsers()
 	users, _ := UsersAll()
+	receiverID := int(users[1].ID)
 	messageData := map[string]interface{}{
-		"senderId":   users[0].ID,
-		"receiverId": users[1].ID,
-		"message":    "Hello World",
+		"senderId":       users[0].ID,
+		"receiverIds":    []int{receiverID},
+		"message":        "Hello World",
+		"conversationId": "",
 	}
 
 	_, err := MessageCreate(messageData)
 
 	assert.Nil(err)
-}
-
-func TestMessagesUser(t *testing.T) {
-	assert := assert.New(t)
-	DBConn = userTC.DBConn
-	defer th.TruncateUsers()
-	defer th.TruncateMessages()
-	createUsers()
-	users, _ := UsersAll()
-
-	createMessages(int(users[0].ID), int(users[1].ID), 2)
-	createMessages(int(users[0].ID), int(users[2].ID), 2)
-	createMessages(int(users[2].ID), int(users[1].ID), 2)
-	createMessages(int(users[0].ID), int(users[2].ID), 2)
-	createMessages(int(users[0].ID), int(users[1].ID), 2)
-	createMessages(int(users[1].ID), int(users[2].ID), 2)
-
-	userMessages, err := MessagesUser(int(users[0].ID))
-
-	assert.Nil(err)
-	fmt.Println(userMessages)
-
-	// TODO after this commit - test that user messages are properly
-	// grouped and grouped into multi-dimensional array
 }

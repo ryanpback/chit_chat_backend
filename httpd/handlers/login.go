@@ -1,8 +1,8 @@
 package handlers
 
 import (
+	"chitChat/helpers"
 	"chitChat/models"
-	"chitChat/services"
 	"net/http"
 )
 
@@ -13,7 +13,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 
-	if valid, err := services.ValidateUser(request, services.GetUserLoginFields()); !valid {
+	if valid, err := helpers.ValidateUser(request, helpers.GetUserLoginFields()); !valid {
 		respondFailedValidation(w, err)
 
 		return

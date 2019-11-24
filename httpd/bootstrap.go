@@ -3,6 +3,7 @@ package main
 import (
 	bs "chitChat/bootstrap"
 	"chitChat/httpd/handlers"
+	"chitChat/services"
 
 	"chitChat/models"
 )
@@ -34,4 +35,8 @@ func bootstrap() {
 	// let's now hydrate a few things in the models package
 	models.DBConn = appConfig.DBConn
 	models.Log = appConfig.Logger
+
+	// let's now hydrate a few things in the models package
+	services.DBConn = appConfig.DBConn
+	services.Log = appConfig.Logger
 }

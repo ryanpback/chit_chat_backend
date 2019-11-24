@@ -1,10 +1,10 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS messages (
-    id                  bigserial       PRIMARY KEY,
-    sender_id           bigserial       NOT NULL,
-    message             text            NOT NULL,
-    created_at          timestamp       DEFAULT     current_timestamp
+    id              bigserial       PRIMARY KEY,
+    sender_id       bigserial       NOT NULL,
+    message         text            NOT NULL,
+    created_at      timestamp       DEFAULT     current_timestamp
 );
 -- +goose StatementEnd
 

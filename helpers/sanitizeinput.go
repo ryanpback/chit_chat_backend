@@ -1,20 +1,18 @@
-package services
+package helpers
 
 import (
-	"fmt"
-
 	"github.com/microcosm-cc/bluemonday"
 )
 
 // SanitizeInterface makes an interface with a string value a string to be passed into SanitizeInput
 func SanitizeInterface(i interface{}) string {
-	s := fmt.Sprintf("%v", i)
+	s := ConvertInterfaceToString(i)
 
 	return SanitizeInput(s)
 }
 
 // SanitizeInput will sanitize all harmful html
-// script, style, object, iframe, base,embed
+// script, style, object, iframe, base, embed
 func SanitizeInput(s string) string {
 	p := bluemonday.UGCPolicy()
 
