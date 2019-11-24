@@ -7,7 +7,7 @@ import (
 // Conversation is a struct that holds a Conversation (conversations table) ID.
 // And a slice of messages
 type Conversation struct {
-	ConversationID int64      `json:"conversationID"`
+	ConversationID int64      `json:"conversationId"`
 	Messages       []*Message `json:"messages"`
 }
 
