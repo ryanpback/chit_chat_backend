@@ -8,8 +8,9 @@ import (
  * Exported Methods
  */
 
-// HandleConversation determines the whether a new conversation
-// record needs to be created or just the relationship
+// HandleConversation determines the whether a new
+// conversation and relationships record needs
+// to be created or just the relationships
 func HandleConversation(convID, messID, userID int64, messTime time.Time, receiverIds []int64) (int64, error) {
 	var err error
 	if convID == 0 {
