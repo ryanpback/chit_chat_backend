@@ -15,12 +15,3 @@ func UserPersistToDB(name string, userName string, email string, password string
 		panic(err.Error())
 	}
 }
-
-// TruncateUsers will truncate the users table
-func TruncateUsers() {
-	_, err := testConfig.DBConn.Exec("TRUNCATE TABLE users RESTART IDENTITY")
-
-	if err != nil {
-		panic(err.Error())
-	}
-}

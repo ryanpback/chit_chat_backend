@@ -4,6 +4,13 @@ import (
 	"time"
 )
 
+// Conversation is a struct that holds a Conversation (conversations table) ID.
+// And a slice of messages
+type Conversation struct {
+	ConversationID int64      `json:"conversationID"`
+	Messages       []*Message `json:"messages"`
+}
+
 /*
  * Exported Methods
  */
@@ -186,4 +193,55 @@ func createConversationsUsers(convID, userID int64, receiverIds []int64) error {
 	}
 
 	return nil
+}
+
+// ConversationsFindByID finds a conversation between the user and receiver
+func ConversationsFindByID(cID int) (*Conversation, error) {
+	const qry = `
+		SELECT
+			*
+		FROM
+			messages
+		WHERE
+			id IN (
+				SELECT
+					message_id
+				FROM
+					conversations_messages
+				WHERE
+					conversation_id = $1
+			)
+		LIMIT
+			50
+	`
+
+	rows, err := DBConn.Query(qry, cID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	messages := make([]*Message, 0)
+
+	for rows.Next() {
+		var m Message
+
+		err := rows.Scan(&m.ID, &m.SenderID, &m.Message, &m.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		messages = append(messages, &m)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	conversation := Conversation{
+		int64(cID),
+		messages,
+	}
+
+	return &conversation, nil
 }

@@ -1,16 +1,20 @@
 package models
 
 import (
+	"chitChat/helpers"
 	th "chitChat/testhelpers"
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func createMessages(user1, user2, count int) {
+// This seeder works with a 1:1 conversation
+func createConversations(user1, user2, count int) int {
 	senderID := user1
 	receiverID := user2
+	convID := 0
 
 	for i := 0; i < count; i++ {
 		if i%2 != 0 {
@@ -19,8 +23,25 @@ func createMessages(user1, user2, count int) {
 
 		message := fmt.Sprintf("User %d, sent user %d a message with an index value of %d", senderID, receiverID, i)
 
-		th.MessagePersistToDB(senderID, message)
+		messageData := Payload{
+			"senderId":       senderID,
+			"receiverIds":    []int{receiverID},
+			"message":        message,
+			"conversationId": convID,
+		}
+
+		m, err := MessageCreate(messageData)
+
+		if err != nil {
+			th.TruncateMessages()
+			panic(err.Error())
+		}
+
+		convID, _ = strconv.Atoi(
+			helpers.ConvertInterfaceToString(m["conversationId"]))
 	}
+
+	return convID
 }
 
 func TestMessageCreate(t *testing.T) {

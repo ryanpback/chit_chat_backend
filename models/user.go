@@ -57,7 +57,6 @@ func UsersAll() ([]*User, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	defer rows.Close()
 
 	users := make([]*User, 0)
