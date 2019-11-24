@@ -2,7 +2,6 @@ package models
 
 import (
 	"chitChat/helpers"
-	"chitChat/services"
 	"strconv"
 	"time"
 )
@@ -46,7 +45,7 @@ func MessageCreate(p Payload) (Payload, error) {
 	cID := int64(convID)
 	receiverIds := helpers.ConvertReceiverIDs(p["receiverIds"])
 
-	cID, err = services.HandleConversation(
+	cID, err = HandleConversation(
 		cID,
 		message.ID,
 		message.SenderID,

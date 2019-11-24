@@ -1,7 +1,6 @@
 package models
 
 import (
-	"chitChat/services"
 	th "chitChat/testhelpers"
 	"fmt"
 	"testing"
@@ -27,7 +26,6 @@ func createMessages(user1, user2, count int) {
 func TestMessageCreate(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = userTC.DBConn
-	services.DBConn = userTC.DBConn
 	defer th.TruncateUsers()
 	defer th.TruncateMessages()
 
@@ -49,7 +47,6 @@ func TestMessageCreate(t *testing.T) {
 func TestMessageCreateSameConversation(t *testing.T) {
 	assert := assert.New(t)
 	DBConn = userTC.DBConn
-	services.DBConn = userTC.DBConn
 	defer th.TruncateUsers()
 	defer th.TruncateMessages()
 
