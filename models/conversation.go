@@ -15,77 +15,45 @@ type Conversation struct {
  * Exported Methods
  */
 
-// HandleConversation determines the whether a new
-// conversation and relationships record needs
-// to be created or just the relationships
-func HandleConversation(convID, messID, userID int64, messTime time.Time, receiverIds []int64) (int64, error) {
-	var err error
-	if convID == 0 {
-		convID, err = CreateConversation(messID, userID, messTime)
-
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	err = HandleConvJoins(convID, messID, userID, receiverIds)
-	if err != nil {
-		er := DeleteConversation(convID)
-		if er != nil {
-			return 0, er
-		}
-
-		return 0, err
-	}
-
-	return convID, nil
-}
-
 // CreateConversation adds a new row to the conversations table
-func CreateConversation(messID, userID int64, messTime time.Time) (int64, error) {
+func CreateConversation() (int64, time.Time, error) {
 	var convID int64
+	var convTime time.Time
 	const qry = `
 		INSERT INTO
-			conversations(message_id, created_at)
-		VALUES
-			($1, $2)
-		RETURNING id;
+			conversations
+		DEFAULT VALUES
+		RETURNING *;
 	`
 
-	row := DBConn.QueryRow(
-		qry,
-		messID,
-		messTime)
+	row := DBConn.QueryRow(qry)
 
-	err := row.Scan(&convID)
+	err := row.Scan(&convID, &convTime)
 	if err != nil {
-		return 0, err
+		return 0, time.Now(), err
 	}
 
-	return convID, nil
+	return convID, convTime, nil
 }
 
 // HandleConvJoins handles the creation and error handling for the messaging join tables
 func HandleConvJoins(convID, messID, userID int64, receiverIds []int64) error {
-	cmID, err := createConversationsMessages(convID, messID)
+	convUserExists, err := UserInConversation(userID, convID)
 	if err != nil {
-		er := DeleteConversationsMessage(cmID)
-		if er != nil {
-			return er
-		}
-
 		return err
+	}
+
+	if convUserExists {
+		return nil
 	}
 
 	err = createConversationsUsers(convID, userID, receiverIds)
 	if err != nil {
-		// Due to the order of how joins are created, if
-		// this fails there's no record to delete
+		er := DeleteConversationsUsers(convID, userID, receiverIds)
 
-		// er := DeleteConversationsUser(cuID)
-		// if er != nil {
-		// 	return 0, er
-		// }
+		if er != nil {
+			return er
+		}
 
 		return err
 	}
@@ -104,67 +72,129 @@ func DeleteConversation(convID int64) error {
 
 	_, err := DBConn.Exec(qry, convID)
 
-	// skip err != nil because it will either be and error or nil
 	return err
 }
 
-// DeleteConversationsMessage deletes a record from the conversations_messages table
-func DeleteConversationsMessage(convID int64) error {
-	const qry = `
-		DELETE FROM
-			conversations_messages
-		WHERE
-			id = $1
-	`
-
-	_, err := DBConn.Exec(qry, convID)
-
-	// skip err != nil because it will either be and error or nil
-	return err
-}
-
-// DeleteConversationsUser deletes a record from the conversations table
-func DeleteConversationsUser(convID int64) error {
+// DeleteConversationsUsers deletes a record from the conversations_users table
+func DeleteConversationsUsers(convID, userID int64, receiverIds []int64) error {
 	const qry = `
 		DELETE FROM
 			conversations_users
 		WHERE
-			id = $1
+			conversation_id = $1 AND user_id IN $2
 	`
+	ids := append(receiverIds, userID)
 
-	_, err := DBConn.Exec(qry, convID)
+	_, err := DBConn.Exec(qry, convID, ids)
 
 	// skip err != nil because it will either be and error or nil
 	return err
+}
+
+// ConversationsFindByID finds a conversation between the user and receiver
+func ConversationsFindByID(cID int) (*Conversation, error) {
+	const qry = `
+		SELECT
+			*
+		FROM
+			messages
+		WHERE
+			conversation_id = $1
+		LIMIT
+			50
+	`
+
+	rows, err := DBConn.Query(qry, cID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	messages := make([]*Message, 0)
+
+	for rows.Next() {
+		var m Message
+
+		err := rows.Scan(&m.ID, &m.SenderID, &m.ConversationID, &m.Message, &m.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		messages = append(messages, &m)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	conversation := Conversation{
+		int64(cID),
+		messages,
+	}
+
+	return &conversation, nil
+}
+
+// ConversationsFindByUserID will retreive all messages in all conversations of a particular user
+func ConversationsFindByUserID(uID int) ([]*Conversation, error) {
+	const qry = `
+		SELECT
+			*
+		FROM (
+			SELECT
+				m.*,
+				ROW_NUMBER() OVER(
+					PARTITION BY
+						cu.user_id, m.conversation_id
+					ORDER BY
+						m.created_at DESC
+				) rn
+			FROM
+				messages m
+			INNER JOIN
+				conversations_users cu
+			ON
+				cu.conversation_id = m.conversation_id
+					AND cu.user_id = $1
+		) t
+		WHERE
+			rn <= 50
+		ORDER BY
+			conversation_id, created_at DESC;
+	`
+
+	rows, err := DBConn.Query(qry, uID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	messages := make(map[int64][]*Message)
+	position := 0
+
+	for rows.Next() {
+		var m Message
+
+		err := rows.Scan(&m.ID, &m.SenderID, &m.ConversationID, &m.Message, &m.CreatedAt, &position)
+		if err != nil {
+			return nil, err
+		}
+
+		messages[m.ConversationID] = append(messages[m.ConversationID], &m)
+	}
+
+	conversations := make([]*Conversation, 0)
+	for k, v := range messages {
+		conv := Conversation{k, v}
+		conversations = append(conversations, &conv)
+	}
+
+	return conversations, nil
 }
 
 /*
  * Un-exported Methods
  */
-
-// CreateConversationsMessages adds a new row to the conversations_messages table
-func createConversationsMessages(convID, messID int64) (int64, error) {
-	var cmID int64
-	const qry = `
-		INSERT INTO
-			conversations_messages(conversation_id, message_id)
-		VALUES
-			($1, $2)
-		RETURNING id;
-	`
-
-	row := DBConn.QueryRow(
-		qry,
-		convID,
-		messID)
-
-	err := row.Scan(&cmID)
-	if err != nil {
-		return 0, err
-	}
-
-	return cmID, nil
-}
 
 // CreateConversationsUsers adds a new row to the conversations_users table
 func createConversationsUsers(convID, userID int64, receiverIds []int64) error {
@@ -184,6 +214,11 @@ func createConversationsUsers(convID, userID int64, receiverIds []int64) error {
 			($1, $2)
 	`
 
+	DBConn.QueryRow(
+		qry,
+		convID,
+		userID)
+
 	// TODO: THIS IS BAD. DO A BATCH INSERT
 	for _, id := range receiverIds {
 		DBConn.QueryRow(
@@ -193,55 +228,4 @@ func createConversationsUsers(convID, userID int64, receiverIds []int64) error {
 	}
 
 	return nil
-}
-
-// ConversationsFindByID finds a conversation between the user and receiver
-func ConversationsFindByID(cID int) (*Conversation, error) {
-	const qry = `
-		SELECT
-			*
-		FROM
-			messages
-		WHERE
-			id IN (
-				SELECT
-					message_id
-				FROM
-					conversations_messages
-				WHERE
-					conversation_id = $1
-			)
-		LIMIT
-			50
-	`
-
-	rows, err := DBConn.Query(qry, cID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	messages := make([]*Message, 0)
-
-	for rows.Next() {
-		var m Message
-
-		err := rows.Scan(&m.ID, &m.SenderID, &m.Message, &m.CreatedAt)
-		if err != nil {
-			return nil, err
-		}
-
-		messages = append(messages, &m)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	conversation := Conversation{
-		int64(cID),
-		messages,
-	}
-
-	return &conversation, nil
 }

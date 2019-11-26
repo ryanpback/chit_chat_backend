@@ -227,6 +227,31 @@ func UserEdit(u *User, p Payload) (*User, error) {
 	return u, nil
 }
 
+// UserInConversation checks if the user is already in a conversation so we don't create a new record
+func UserInConversation(u, c int64) (bool, error) {
+	const qry = `
+		SELECT
+			COUNT(*)
+		FROM
+			conversations_users
+		WHERE
+			user_id = $1 AND conversation_id = $2
+	`
+	var count int
+
+	row := DBConn.QueryRow(qry, u, c)
+	err := row.Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	if count < 1 {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 /*
  * Un-exported Methods
  */

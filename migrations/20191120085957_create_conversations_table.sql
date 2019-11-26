@@ -2,8 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS conversations (
     id              bigserial       PRIMARY KEY,
-    message_id      bigserial       NOT NULL,
-    created_at      timestamp       NOT NULL
+    created_at      timestamp       DEFAULT     current_timestamp
 );
 -- +goose StatementEnd
 

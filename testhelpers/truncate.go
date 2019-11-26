@@ -27,9 +27,4 @@ func TruncateMessages() {
 	if err != nil {
 		panic(err.Error())
 	}
-
-	_, err = testConfig.DBConn.Exec("TRUNCATE TABLE conversations_messages RESTART IDENTITY")
-	if err != nil {
-		panic(err.Error())
-	}
 }

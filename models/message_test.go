@@ -38,7 +38,7 @@ func createConversations(user1, user2, count int) int {
 		}
 
 		convID, _ = strconv.Atoi(
-			helpers.ConvertInterfaceToString(m["conversationId"]))
+			helpers.ConvertInterfaceToString((*m)["conversationId"]))
 	}
 
 	return convID
@@ -82,7 +82,7 @@ func TestMessageCreateSameConversation(t *testing.T) {
 	}
 
 	res, _ := MessageCreate(messageData)
-	convID := res["conversationId"]
+	convID := (*res)["conversationId"]
 
 	messageData = map[string]interface{}{
 		"senderId":       users[0].ID,
@@ -93,5 +93,5 @@ func TestMessageCreateSameConversation(t *testing.T) {
 
 	res, _ = MessageCreate(messageData)
 
-	assert.Equal(convID, res["conversationId"])
+	assert.Equal(convID, (*res)["conversationId"])
 }

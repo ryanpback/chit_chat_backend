@@ -8,31 +8,49 @@ import (
 
 // Message describes the data attributes of a message
 type Message struct {
-	ID        int64     `json:"id"`
-	SenderID  int64     `json:"senderId"`
-	Message   string    `json:"message"`
-	CreatedAt time.Time `json:"createdAt"`
+	ID             int64     `json:"id"`
+	SenderID       int64     `json:"senderId"`
+	ConversationID int64     `json:"conversationId"`
+	Message        string    `json:"message"`
+	CreatedAt      time.Time `json:"createdAt"`
 }
 
 // MessageCreate will persist a new message record into the DB
-func MessageCreate(p Payload) (Payload, error) {
+func MessageCreate(p Payload) (*Payload, error) {
 	var message Message
+	var err error
 	const qry = `
 		INSERT INTO
-			messages(sender_id, message)
+			messages(sender_id, conversation_id, message, created_at)
 		VALUES
-			($1, $2)
+			($1, $2, $3, $4)
 		RETURNING *;
 	`
+	convID, _ := strconv.Atoi(
+		helpers.ConvertInterfaceToString(p["conversationId"]))
+	cID := int64(convID)
+	// Use conversation created_at timestamp for first message in conversation. The rest will use now.
+	cTime := time.Now()
+
+	if cID == 0 {
+		cID, cTime, err = CreateConversation()
+
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	row := DBConn.QueryRow(
 		qry,
 		p["senderId"],
-		p["message"])
+		cID,
+		p["message"],
+		cTime)
 
-	err := row.Scan(
+	err = row.Scan(
 		&message.ID,
 		&message.SenderID,
+		&message.ConversationID,
 		&message.Message,
 		&message.CreatedAt)
 
@@ -40,19 +58,17 @@ func MessageCreate(p Payload) (Payload, error) {
 		return nil, err
 	}
 
-	convID, _ := strconv.Atoi(
-		helpers.ConvertInterfaceToString(p["conversationId"]))
-	cID := int64(convID)
 	receiverIds := helpers.ConvertReceiverIDs(p["receiverIds"])
 
-	cID, err = HandleConversation(
+	err = HandleConvJoins(
 		cID,
 		message.ID,
 		message.SenderID,
-		message.CreatedAt,
 		receiverIds)
 
 	if err != nil {
+		_ = DeleteConversation(cID)
+		// _ = DeleteMessage(message.ID)
 		return nil, err
 	}
 
@@ -61,7 +77,7 @@ func MessageCreate(p Payload) (Payload, error) {
 		"message":        &message,
 	}
 
-	return response, nil
+	return &response, nil
 }
 
 // MessagesUser will return the messages belonging
