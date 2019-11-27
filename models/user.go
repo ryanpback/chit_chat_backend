@@ -59,20 +59,8 @@ func UsersAll() ([]*User, error) {
 	}
 	defer rows.Close()
 
-	users := make([]*User, 0)
-
-	for rows.Next() {
-		var u User
-
-		err := rows.Scan(&u.ID, &u.Name, &u.Email, &u.UserName, &u.password, &u.CreatedAt, &u.UpdatedAt)
-		if err != nil {
-			return nil, err
-		}
-
-		users = append(users, &u)
-	}
-
-	if err = rows.Err(); err != nil {
+	users, err := buildUsersSlice(rows)
+	if err != nil {
 		return nil, err
 	}
 
@@ -252,9 +240,61 @@ func UserInConversation(u, c int64) (bool, error) {
 	return true, nil
 }
 
+// UsersTypeahead will find users where the email contains the text passed in
+func UsersTypeahead(s string) ([]*User, error) {
+	const qry = `
+		SELECT
+			*
+		FROM
+			users
+		WHERE
+			email ILIKE $1
+		LIMIT
+			10;
+	`
+
+	rows, err := DBConn.Query(qry, "%"+s+"%")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	users, err := buildUsersSlice(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(users) < 1 {
+		err = fmt.Errorf(fmt.Sprintf("No users containing email: %v", s))
+	}
+
+	return users, err
+}
+
 /*
  * Un-exported Methods
  */
+
+func buildUsersSlice(r *sql.Rows) ([]*User, error) {
+	users := make([]*User, 0)
+
+	for r.Next() {
+		var u User
+
+		err := r.Scan(&u.ID, &u.Name, &u.Email, &u.UserName, &u.password, &u.CreatedAt, &u.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, &u)
+	}
+
+	if err := r.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
 
 func hashAndSaltPassword(b []byte) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword(b, 5)

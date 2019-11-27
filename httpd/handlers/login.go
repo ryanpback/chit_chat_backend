@@ -26,5 +26,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, user)
+	response := Response{
+		"user": user,
+	}
+	respondWithJSON(w, http.StatusOK, response)
 }

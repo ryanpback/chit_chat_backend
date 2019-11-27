@@ -41,6 +41,11 @@ func openRoutes() []handlerInfo {
 			handlerFunc: handlers.UsersEdit,
 			methods:     []string{"PATCH", "OPTIONS"},
 		},
+		{
+			route:       "/users/{searchString}/typeahead",
+			handlerFunc: handlers.UsersTypeahead,
+			methods:     []string{"GET", "OPTIONS"},
+		},
 	}
 
 	return routes

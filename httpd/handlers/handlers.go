@@ -12,3 +12,6 @@ var DBConn *sql.DB
 
 // Log this is here so we can share the same logger with the main package
 var Log *logrus.Logger
+
+// Response is the response type to return from requests
+type Response map[string]interface{}

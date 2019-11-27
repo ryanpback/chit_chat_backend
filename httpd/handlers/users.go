@@ -18,7 +18,10 @@ func UsersIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, users)
+	response := Response{
+		"users": users,
+	}
+	respondWithJSON(w, http.StatusOK, response)
 }
 
 // UsersShow retrieves a single user based on ID
@@ -34,7 +37,10 @@ func UsersShow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, user)
+	response := Response{
+		"user": user,
+	}
+	respondWithJSON(w, http.StatusOK, response)
 }
 
 // UsersCreate creates a new user
@@ -57,7 +63,10 @@ func UsersCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJSON(w, http.StatusCreated, user)
+	response := Response{
+		"user": user,
+	}
+	respondWithJSON(w, http.StatusCreated, response)
 }
 
 // UsersEdit will edit a user (passed by ID)
@@ -89,5 +98,28 @@ func UsersEdit(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
 
-	respondWithJSON(w, http.StatusOK, updatedUser)
+	response := Response{
+		"user": updatedUser,
+	}
+	respondWithJSON(w, http.StatusOK, response)
+}
+
+// UsersTypeahead will return users whose email is like the text passed in from the user
+func UsersTypeahead(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	searchString := params["searchString"]
+
+	if len(searchString) <= 3 {
+		respondWithError(w, http.StatusBadRequest, "String not long enough to search with")
+	}
+
+	users, err := models.UsersTypeahead(searchString)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, err.Error())
+	}
+
+	response := Response{
+		"users": users,
+	}
+	respondWithJSON(w, http.StatusOK, response)
 }

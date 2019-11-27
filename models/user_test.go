@@ -143,3 +143,39 @@ func TestFindByEmailUserExists(t *testing.T) {
 
 	assert.Equal(users[0].email, (*u).Email)
 }
+
+func TestUsersTypeahead(t *testing.T) {
+	assert := assert.New(t)
+	DBConn = userTC.DBConn
+	defer th.TruncateUsers()
+
+	createUsers()
+
+	users, err := UsersTypeahead("test")
+
+	assert.Nil(err)
+	for _, u := range users {
+		assert.Contains((*u).Email, "test")
+	}
+
+	users, err = UsersTypeahead("test1")
+	for _, u := range users {
+		assert.Contains((*u).Email, "test1")
+		assert.NotContains((*u).Email, "test@")
+		assert.NotContains((*u).Email, "test2@")
+	}
+}
+
+func TestUsersTypeaheadNoResults(t *testing.T) {
+	assert := assert.New(t)
+	DBConn = userTC.DBConn
+	defer th.TruncateUsers()
+
+	createUsers()
+
+	users, err := UsersTypeahead("emailnotfound")
+
+	assert.Equal(0, len(users))
+	assert.NotNil(err)
+	assert.Contains(err.Error(), "No users")
+}
