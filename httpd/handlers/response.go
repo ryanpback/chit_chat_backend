@@ -10,7 +10,7 @@ func respondWithError(w http.ResponseWriter, statusCode int, message string) {
 	respondWithJSON(
 		w,
 		statusCode,
-		map[string]string{"error": message})
+		Response{"error": message})
 }
 
 // respondWithJSON streams data to the ResponseWriter

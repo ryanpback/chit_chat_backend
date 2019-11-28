@@ -116,6 +116,8 @@ func UsersTypeahead(w http.ResponseWriter, r *http.Request) {
 	users, err := models.UsersTypeahead(searchString)
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, err.Error())
+
+		return
 	}
 
 	response := Response{

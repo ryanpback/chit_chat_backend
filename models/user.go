@@ -265,7 +265,7 @@ func UsersTypeahead(s string) ([]*User, error) {
 	}
 
 	if len(users) < 1 {
-		err = fmt.Errorf(fmt.Sprintf("No users containing email: %v", s))
+		err = fmt.Errorf(fmt.Sprintf("No users containing email: '%v'", s))
 	}
 
 	return users, err
