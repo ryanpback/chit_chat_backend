@@ -37,13 +37,18 @@ func openRoutes() []handlerInfo {
 			methods:     []string{"POST", "OPTIONS"},
 		},
 		{
-			route:       "/users/{id: [0-9]+}",
+			route:       "/users/{id:[0-9]+}",
 			handlerFunc: handlers.UsersEdit,
 			methods:     []string{"PATCH", "OPTIONS"},
 		},
 		{
 			route:       "/users/{searchString}/typeahead",
 			handlerFunc: handlers.UsersTypeahead,
+			methods:     []string{"GET", "OPTIONS"},
+		},
+		{
+			route:       "/users/{id:[0-9]+}/conversations",
+			handlerFunc: handlers.ConversationsUser,
 			methods:     []string{"GET", "OPTIONS"},
 		},
 	}
