@@ -109,7 +109,7 @@ func UsersTypeahead(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	searchString := params["searchString"]
 
-	if len(searchString) <= 3 {
+	if len(searchString) < 3 {
 		respondWithError(w, http.StatusBadRequest, "String not long enough to search with")
 	}
 
